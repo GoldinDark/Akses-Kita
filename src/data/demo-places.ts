@@ -3,6 +3,7 @@ import type { Place } from "@/types/place";
 /**
  * DATA DEMO. Semua tempat di bawah ini fiktif dan status aksesnya simulasi.
  * Jangan menampilkannya sebagai kondisi lokasi nyata.
+ * Posisinya hanya tersebar di sekitar Kota Bandung untuk keperluan uji peta.
  */
 export const DEMO_PLACES: Place[] = [
   {
@@ -10,8 +11,8 @@ export const DEMO_PLACES: Place[] = [
     name: "Kantor Layanan Warga Contoh",
     category: "public_service",
     area: "Area Contoh A",
-    latitude: -6.186,
-    longitude: 106.83,
+    latitude: -6.914,
+    longitude: 107.609,
     isDemo: true,
     observedAt: "2026-09-12",
     attributes: {
@@ -28,8 +29,8 @@ export const DEMO_PLACES: Place[] = [
     name: "Perpustakaan Daerah Contoh",
     category: "education",
     area: "Area Contoh B",
-    latitude: -6.21,
-    longitude: 106.845,
+    latitude: -6.895,
+    longitude: 107.613,
     isDemo: true,
     observedAt: "2026-08-30",
     attributes: {
@@ -46,8 +47,8 @@ export const DEMO_PLACES: Place[] = [
     name: "Puskesmas Contoh",
     category: "health",
     area: "Area Contoh A",
-    latitude: -6.195,
-    longitude: 106.805,
+    latitude: -6.93,
+    longitude: 107.62,
     isDemo: true,
     observedAt: "2026-07-21",
     attributes: {
@@ -64,8 +65,8 @@ export const DEMO_PLACES: Place[] = [
     name: "Pasar Rakyat Contoh",
     category: "market",
     area: "Area Contoh C",
-    latitude: -6.225,
-    longitude: 106.82,
+    latitude: -6.935,
+    longitude: 107.605,
     isDemo: true,
     observedAt: "2026-06-03",
     attributes: {
@@ -82,8 +83,8 @@ export const DEMO_PLACES: Place[] = [
     name: "Taman Kota Contoh",
     category: "park",
     area: "Area Contoh B",
-    latitude: -6.2,
-    longitude: 106.86,
+    latitude: -6.899,
+    longitude: 107.635,
     isDemo: true,
     observedAt: null,
     attributes: {
@@ -100,8 +101,8 @@ export const DEMO_PLACES: Place[] = [
     name: "Terminal Angkutan Contoh",
     category: "transport",
     area: "Area Contoh C",
-    latitude: -6.17,
-    longitude: 106.815,
+    latitude: -6.912,
+    longitude: 107.599,
     isDemo: true,
     observedAt: "2026-09-27",
     attributes: {

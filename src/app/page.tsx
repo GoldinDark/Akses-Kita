@@ -1,7 +1,6 @@
 import { DEMO_PLACES } from "@/data/demo-places";
 import { StatusLegend } from "@/components/accessibility/StatusLegend";
 import { HomeExplorer } from "@/components/places/HomeExplorer";
-import { SearchPanel } from "@/components/places/SearchPanel";
 
 export default function HomePage() {
   return (
@@ -18,8 +17,6 @@ export default function HomePage() {
           spesifik, transparan, dan dapat diperbarui bersama komunitas.
         </p>
       </section>
-
-      <SearchPanel />
 
       <HomeExplorer places={DEMO_PLACES} />
 

@@ -4,7 +4,11 @@ import {
   ATTRIBUTE_LABELS,
   CATEGORY_LABELS,
 } from "@/lib/accessibility";
+import type { MatchState } from "@/lib/places/match";
+import { MatchBadge } from "@/components/places/MatchBadge";
+import { Button } from "@/components/ui/Button";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { cn } from "@/lib/utils/cn";
 
 // timeZone UTC agar hasil format sama di server dan browser (mencegah hydration mismatch).
 const dateFormatter = new Intl.DateTimeFormat("id-ID", {
@@ -17,9 +21,29 @@ function formatObservedAt(observedAt: string | null): string {
   return dateFormatter.format(new Date(observedAt));
 }
 
-export function PlaceCard({ place }: { place: Place }) {
+interface PlaceCardProps {
+  place: Place;
+  match: MatchState;
+  selected: boolean;
+  onShowOnMap: (id: string) => void;
+}
+
+export function PlaceCard({
+  place,
+  match,
+  selected,
+  onShowOnMap,
+}: PlaceCardProps) {
   return (
-    <article className="rounded-xl border border-line bg-surface p-5 shadow-sm">
+    <article
+      // id dan tabIndex=-1 membuat kartu bisa dituju dari peta ("Lihat di daftar").
+      id={`place-${place.id}`}
+      tabIndex={-1}
+      className={cn(
+        "rounded-xl border bg-surface p-5 shadow-sm",
+        selected ? "border-brand-700 ring-2 ring-brand-700" : "border-line",
+      )}
+    >
       <header>
         {place.isDemo ? (
           <p className="inline-block rounded bg-amber-100 px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-amber-900">
@@ -30,6 +54,9 @@ export function PlaceCard({ place }: { place: Place }) {
         <p className="text-muted">
           {CATEGORY_LABELS[place.category]} · {place.area}
         </p>
+        <div className="mt-2">
+          <MatchBadge state={match} />
+        </div>
       </header>
 
       <dl className="mt-4 grid gap-2">
@@ -50,6 +77,16 @@ export function PlaceCard({ place }: { place: Place }) {
         Tanggal observasi{place.isDemo ? " (simulasi)" : ""}:{" "}
         {formatObservedAt(place.observedAt)}
       </p>
+
+      <Button
+        variant="secondary"
+        size="sm"
+        className="mt-3"
+        onClick={() => onShowOnMap(place.id)}
+        aria-label={`Tampilkan ${place.name} di peta`}
+      >
+        Tampilkan di peta
+      </Button>
     </article>
   );
 }
