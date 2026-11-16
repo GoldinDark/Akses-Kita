@@ -1,10 +1,14 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonStyles } from "@/components/ui/Button";
+import { signOut } from "@/lib/auth/actions";
+import { getCurrentUser } from "@/lib/auth/session";
 
 const navLinkStyles =
   "inline-flex min-h-11 items-center rounded-lg px-3 font-medium text-ink hover:bg-brand-50";
 
-export function SiteHeader() {
+export async function SiteHeader() {
+  const user = await getCurrentUser();
+
   return (
     <header className="border-b border-line bg-surface">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-3 sm:px-6">
@@ -27,11 +31,36 @@ export function SiteHeader() {
           </ul>
         </nav>
 
-        {/* Dinonaktifkan sementara: halaman login dan kontribusi dibuat di fase berikutnya. */}
-        <div className="flex gap-2">
-          <Button variant="secondary" size="sm" disabled>
-            Masuk
-          </Button>
+        <div className="flex flex-wrap gap-2">
+          {user ? (
+            <>
+              <Link
+                href="/akun"
+                className={buttonStyles({ variant: "secondary", size: "sm" })}
+              >
+                Akun saya
+              </Link>
+              {/* Keluar memakai form + server action agar dikirim lewat POST. */}
+              <form action={signOut}>
+                <Button type="submit" variant="ghost" size="sm">
+                  Keluar
+                </Button>
+              </form>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/masuk"
+                className={buttonStyles({ variant: "secondary", size: "sm" })}
+              >
+                Masuk
+              </Link>
+              <Link href="/daftar" className={buttonStyles({ size: "sm" })}>
+                Daftar
+              </Link>
+            </>
+          )}
+          {/* Dinonaktifkan sementara: fitur kontribusi dibuat di fase berikutnya. */}
           <Button size="sm" disabled>
             Kontribusi
           </Button>
