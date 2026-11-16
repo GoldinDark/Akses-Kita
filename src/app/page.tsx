@@ -1,8 +1,14 @@
-import { DEMO_PLACES } from "@/data/demo-places";
 import { StatusLegend } from "@/components/accessibility/StatusLegend";
 import { HomeExplorer } from "@/components/places/HomeExplorer";
+import { StateMessage } from "@/components/ui/StateMessage";
+import { getPublishedPlaces } from "@/lib/places/repository";
 
-export default function HomePage() {
+// Data diambil dari database pada setiap kunjungan, bukan dibekukan saat build.
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const result = await getPublishedPlaces();
+
   return (
     <div className="mx-auto max-w-6xl space-y-12 px-4 py-8 sm:px-6 sm:py-12">
       <section aria-labelledby="hero-heading" className="space-y-4">
@@ -18,7 +24,21 @@ export default function HomePage() {
         </p>
       </section>
 
-      <HomeExplorer places={DEMO_PLACES} />
+      {!result.ok ? (
+        <StateMessage
+          variant="error"
+          title="Data tempat belum bisa dimuat"
+          description={result.message}
+        />
+      ) : result.places.length === 0 ? (
+        <StateMessage
+          variant="empty"
+          title="Belum ada tempat yang dipublikasikan"
+          description="Data akan muncul di sini setelah tempat pertama dipublikasikan."
+        />
+      ) : (
+        <HomeExplorer places={result.places} />
+      )}
 
       <section
         id="cara-menggunakan"
