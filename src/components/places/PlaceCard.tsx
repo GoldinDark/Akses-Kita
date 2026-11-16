@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Place } from "@/types/place";
 import {
   ATTRIBUTE_CODES,
@@ -6,7 +7,7 @@ import {
 } from "@/lib/accessibility";
 import type { MatchState } from "@/lib/places/match";
 import { MatchBadge } from "@/components/places/MatchBadge";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonStyles } from "@/components/ui/Button";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { cn } from "@/lib/utils/cn";
 
@@ -78,15 +79,23 @@ export function PlaceCard({
         {formatObservedAt(place.observedAt)}
       </p>
 
-      <Button
-        variant="secondary"
-        size="sm"
-        className="mt-3"
-        onClick={() => onShowOnMap(place.id)}
-        aria-label={`Tampilkan ${place.name} di peta`}
-      >
-        Tampilkan di peta
-      </Button>
+            <div className="mt-3 flex flex-wrap gap-2">
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => onShowOnMap(place.id)}
+          aria-label={`Tampilkan ${place.name} di peta`}
+        >
+          Tampilkan di peta
+        </Button>
+        <Link
+          href={`/tempat/${place.id}`}
+          className={buttonStyles({ size: "sm" })}
+          aria-label={`Lihat detail ${place.name}`}
+        >
+          Lihat detail
+        </Link>
+      </div>
     </article>
   );
 }

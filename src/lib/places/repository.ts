@@ -1,4 +1,6 @@
+import { cache } from "react";
 import { ATTRIBUTE_CODES, CATEGORY_LABELS, STATUS_ORDER } from "@/lib/accessibility";
+import { isSourceType, type SourceType } from "@/lib/places/source";
 import { createPublicClient } from "@/lib/supabase/public-client";
 import type {
   AccessibilityStatus,
@@ -23,7 +25,23 @@ interface AttributeRow {
   attribute_code: string;
   status: string;
   observed_on: string;
+  source_type?: string;
 }
+
+/** Status satu atribut beserta kapan dan dari mana informasinya. */
+export interface AttributeDetail {
+  status: AccessibilityStatus;
+  observedOn: string | null;
+  sourceType: SourceType | null;
+}
+
+export interface PlaceDetail extends Place {
+  attributeDetails: Record<AttributeCode, AttributeDetail>;
+}
+
+export type PlaceDetailResult =
+  | { ok: true; place: PlaceDetail | null }
+  | { ok: false; message: string };
 
 export type PlacesResult =
   | { ok: true; places: Place[] }
@@ -130,3 +148,84 @@ export async function getPublishedPlaces(): Promise<PlacesResult> {
     };
   }
 }
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Menambahkan rincian tanggal dan sumber per atribut ke objek Place. */
+export function buildPlaceDetail(
+  placeRow: PlaceRow,
+  attributeRows: AttributeRow[],
+): PlaceDetail | null {
+  const [place] = buildPlaces([placeRow], attributeRows);
+  if (!place) return null;
+
+  const attributeDetails = Object.fromEntries(
+    ATTRIBUTE_CODES.map((code) => [
+      code,
+      { status: "unknown", observedOn: null, sourceType: null },
+    ]),
+  ) as Record<AttributeCode, AttributeDetail>;
+
+  for (const row of attributeRows) {
+    if (!ATTRIBUTE_SET.has(row.attribute_code)) continue;
+    attributeDetails[row.attribute_code as AttributeCode] = {
+      status: STATUS_CODES.has(row.status)
+        ? (row.status as AccessibilityStatus)
+        : "unknown",
+      observedOn: row.observed_on,
+      sourceType:
+        row.source_type && isSourceType(row.source_type)
+          ? row.source_type
+          : null,
+    };
+  }
+
+  return { ...place, attributeDetails };
+}
+
+/**
+ * Satu tempat yang dipublikasikan, atau place: null jika tidak ada.
+ * cache() membuat pemanggilan berulang pada satu permintaan hanya memakai satu kueri.
+ */
+export const getPlaceById = cache(
+  async (id: string): Promise<PlaceDetailResult> => {
+    // ID yang bukan UUID pasti tidak ada; hindari galat dari database.
+    if (!UUID_PATTERN.test(id)) return { ok: true, place: null };
+
+    try {
+      const supabase = createPublicClient();
+
+      const [placeResponse, attributesResponse] = await Promise.all([
+        supabase
+          .from("places")
+          .select("id, name, category, area, latitude, longitude, is_demo")
+          .eq("id", id)
+          .eq("status", "published")
+          .maybeSingle(),
+        supabase
+          .from("place_attribute_current")
+          .select("place_id, attribute_code, status, observed_on, source_type")
+          .eq("place_id", id),
+      ]);
+
+      if (placeResponse.error) throw placeResponse.error;
+      if (attributesResponse.error) throw attributesResponse.error;
+      if (!placeResponse.data) return { ok: true, place: null };
+
+      return {
+        ok: true,
+        place: buildPlaceDetail(
+          placeResponse.data as PlaceRow,
+          (attributesResponse.data ?? []) as AttributeRow[],
+        ),
+      };
+    } catch (error) {
+      console.error("[getPlaceById] gagal mengambil data:", error);
+      return {
+        ok: false,
+        message: "Data tempat belum bisa dimuat. Coba muat ulang halaman.",
+      };
+    }
+  },
+);
