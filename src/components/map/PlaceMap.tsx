@@ -31,7 +31,6 @@ import {
   type MatchState,
 } from "@/lib/places/match";
 import { MatchBadge } from "@/components/places/MatchBadge";
-import { StateMessage } from "@/components/ui/StateMessage";
 
 /** Permintaan dari daftar: "tampilkan tempat ini di peta". `nonce` berubah tiap klik. */
 export interface MapRequest {
@@ -50,16 +49,25 @@ export interface PlaceMapProps {
 // Ikon dibuat sekali per kombinasi (status, terpilih) lalu dipakai ulang.
 const iconCache = new Map<string, DivIcon>();
 
-function getMarkerIcon(state: MatchState, selected: boolean): DivIcon {
-  const key = `${state}-${selected}`;
+function getMarkerIcon(
+  state: MatchState,
+  selected: boolean,
+  label: string,
+): DivIcon {
+  const key = `${state}-${selected}-${label}`;
   const cached = iconCache.get(key);
   if (cached) return cached;
 
   // Isi HTML hanya string tetap dari kode kita (bukan nama tempat), jadi aman dari XSS.
+  // Tanpa kriteria, penanda berisi nomor yang sama dengan nomor di daftar.
   const ring = selected ? " ring-4 ring-brand-900" : "";
+  const style =
+    state === "no_criteria"
+      ? "rounded-full border-white bg-brand-800 text-white"
+      : MATCH_STYLES[state].marker;
   const icon = divIcon({
     className: "",
-    html: `<span aria-hidden="true" class="flex h-9 w-9 items-center justify-center border-2 text-lg font-bold shadow-md ${MATCH_STYLES[state].marker}${ring}">${MATCH_SYMBOLS[state]}</span>`,
+    html: `<span aria-hidden="true" class="flex h-9 w-9 items-center justify-center border-2 text-base font-bold shadow-md ${style}${ring}">${label}</span>`,
     iconSize: [36, 36],
     iconAnchor: [18, 18],
     popupAnchor: [0, -18],
@@ -127,22 +135,25 @@ function MapController({ results, mapRequest, markerRefs }: MapControllerProps) 
   }, [map]);
 
   // 4) Tombol Escape menutup popup. Bawaan Leaflet mengandalkan event "keypress",
-  //    yang tidak dikirim browser untuk Escape. Fokus dikembalikan ke penanda
-  //    agar pengguna keyboard tidak kehilangan posisinya.
+  //    yang tidak dikirim browser untuk Escape. Event didengarkan di seluruh dokumen
+  //    (bukan hanya di dalam peta), karena popup juga bisa dibuka dari tombol
+  //    "Tampilkan di peta" di daftar, saat fokus keyboard ada di luar peta.
+  //    Fokus hanya dikembalikan ke penanda jika sebelumnya memang berada di dalam peta.
   useEffect(() => {
     const container = map.getContainer();
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
+      if (event.key !== "Escape" || event.defaultPrevented) return;
       for (const marker of markerRefs.current.values()) {
         if (marker.isPopupOpen()) {
+          const focusWasInMap = container.contains(document.activeElement);
           marker.closePopup();
-          marker.getElement()?.focus();
+          if (focusWasInMap) marker.getElement()?.focus();
           break;
         }
       }
     };
-    container.addEventListener("keydown", handleKeyDown);
-    return () => container.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [map, markerRefs]);
 
   // 5) Permintaan dari daftar: pusatkan peta ke tempat itu lalu buka popup-nya.
@@ -172,13 +183,13 @@ export function PlaceMap({
   const [tileFailed, setTileFailed] = useState(false);
 
   return (
-    <div className="space-y-3">
+    <div className="absolute inset-0">
       <MapContainer
         center={DEFAULT_MAP_CENTER}
         zoom={DEFAULT_MAP_ZOOM}
         zoomControl={false}
         scrollWheelZoom={false}
-        className="h-96 w-full rounded-lg lg:h-[32rem]"
+        className="h-full w-full"
       >
         <TileLayer
           url={TILE_PROVIDER.url}
@@ -198,12 +209,20 @@ export function PlaceMap({
           markerRefs={markerRefs}
         />
 
-        {results.map(({ place, match }) => (
+        {results.map(({ place, match }, index) => (
           <Marker
             key={place.id}
             position={[place.latitude, place.longitude]}
-            icon={getMarkerIcon(match, place.id === selectedId)}
-            title={`${place.name}: ${MATCH_LABELS[match]}`}
+            icon={getMarkerIcon(
+              match,
+              place.id === selectedId,
+              match === "no_criteria" ? String(index + 1) : MATCH_SYMBOLS[match],
+            )}
+            title={
+              match === "no_criteria"
+                ? `${index + 1}. ${place.name}`
+                : `${place.name}: ${MATCH_LABELS[match]}`
+            }
             ref={(marker) => {
               if (marker) markerRefs.current.set(place.id, marker);
               else markerRefs.current.delete(place.id);
@@ -216,7 +235,7 @@ export function PlaceMap({
                 <div>
                   {CATEGORY_LABELS[place.category]} · {place.area}
                 </div>
-                <MatchBadge state={match} />
+                {match !== "no_criteria" ? <MatchBadge state={match} /> : null}
                 {place.isDemo ? (
                   <div className="text-sm font-semibold">
                     Data demo: posisi dan status adalah simulasi.
@@ -236,11 +255,13 @@ export function PlaceMap({
       </MapContainer>
 
       {tileFailed ? (
-        <StateMessage
-          variant="error"
-          title="Sebagian gambar peta gagal dimuat"
-          description="Penanda tetap bisa dipakai dan daftar tempat tetap lengkap. Periksa koneksi internet Anda."
-        />
+        <p
+          role="alert"
+          className="absolute inset-x-3 bottom-3 z-[1000] rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-900"
+        >
+          Sebagian gambar peta gagal dimuat. Penanda dan daftar tempat tetap
+          bisa dipakai; periksa koneksi internet Anda.
+        </p>
       ) : null}
     </div>
   );

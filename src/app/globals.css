@@ -6,21 +6,28 @@
   misalnya --color-brand-700 -> bg-brand-700, text-brand-700, border-brand-700.
 */
 @theme {
-  --color-canvas: #f8fafc;
+  /* Palet C "Hijau + Terakota": hijau untuk aksi utama, terakota untuk ajakan/aksen,
+     latar pasir hangat. Rasio kontras tiap pasangan teks/latar sudah dihitung (>= 4,5:1). */
+  --color-canvas: #f7f4ec;
   --color-surface: #ffffff;
-  --color-ink: #0f172a;
-  --color-muted: #475569;
-  --color-line: #cbd5e1;
+  --color-ink: #1a2e1f;
+  --color-muted: #4b5a4f;
+  --color-line: #d5d0c0;
 
-  --color-brand-50: #f0fdfa;
-  --color-brand-100: #ccfbf1;
-  --color-brand-700: #0f766e;
-  --color-brand-800: #115e59;
-  --color-brand-900: #134e4a;
+  --color-brand-50: #eef6ee;
+  --color-brand-100: #d6ead7;
+  --color-brand-700: #166534;
+  --color-brand-800: #14532d;
+  --color-brand-900: #0f3d22;
+
+  --color-accent-50: #fdeee6;
+  --color-accent-100: #fbd9c5;
+  --color-accent-700: #9a3412;
+  --color-accent-800: #7c2a0e;
 }
 
 @theme inline {
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-atkinson), ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {

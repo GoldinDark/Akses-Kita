@@ -13,11 +13,13 @@ const PlaceMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <StateMessage
-        variant="loading"
-        title="Memuat peta..."
-        description="Daftar tempat tetap bisa dipakai selagi peta dimuat."
-      />
+      <div className="p-5">
+        <StateMessage
+          variant="loading"
+          title="Memuat peta..."
+          description="Daftar tempat tetap bisa dipakai selagi peta dimuat."
+        />
+      </div>
     ),
   },
 );
@@ -26,23 +28,20 @@ export function MapPanel(props: PlaceMapProps) {
   return (
     <section
       aria-labelledby="map-heading"
-      className="rounded-xl border border-line bg-surface p-5"
+      className="flex h-full flex-col bg-surface"
     >
-      <h3 id="map-heading" className="text-lg font-bold">
+      <h3 id="map-heading" className="sr-only">
         Peta
       </h3>
 
       {/* isolate: lapisan peta tidak boleh menimpa elemen lain, seperti tautan "Lewati". */}
-      <div className="isolate mt-3">
+      <div className="isolate relative min-h-0 flex-1">
         <MapErrorBoundary>
           <PlaceMap {...props} />
         </MapErrorBoundary>
       </div>
 
       <MapLegend />
-      <p className="mt-3 text-sm text-muted">
-        Peta hanya pelengkap. Semua informasi tetap tersedia di daftar tempat.
-      </p>
     </section>
   );
 }

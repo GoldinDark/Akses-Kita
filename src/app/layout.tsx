@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Atkinson_Hyperlegible_Next } from "next/font/google";
 import "./globals.css";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Atkinson Hyperlegible Next: dirancang untuk keterbacaan bagi pembaca low-vision.
+const atkinson = Atkinson_Hyperlegible_Next({
+  variable: "--font-atkinson",
   subsets: ["latin"],
 });
 
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="id" className={`${geistSans.variable} h-full antialiased`}>
+        <html lang="id" className={`${atkinson.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <a
           href="#konten-utama"
@@ -31,8 +32,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 
         <div className="border-b border-amber-300 bg-amber-50 text-amber-950">
           <p className="mx-auto max-w-6xl px-4 py-2 text-sm sm:px-6">
-            <strong>Mode demo:</strong> semua tempat dan status akses di situs
-            ini adalah simulasi untuk pengembangan, bukan kondisi lokasi nyata.
+            <strong>Versi pilot (Bandung):</strong> tempat bertanda &quot;Data
+            demo&quot; adalah simulasi. Tempat lain hanya memuat nama dan
+            koordinat perkiraan dari Wikipedia, dan informasi aksesnya masih
+            belum diketahui.
           </p>
         </div>
 
